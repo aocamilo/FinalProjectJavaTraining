@@ -1,0 +1,13 @@
+== Reporte de entregas == 
+(-2, 4) dirección Norte
+(-1, 3) dirección Sur
+(0, 0) dirección Oeste
+== Fin de ruta == 
+(-2, 4) dirección Norte
+(-1, 3) dirección Sur
+(0, 0) dirección Oeste
+== Fin de ruta == 
+(-2, 4) dirección Norte
+(-2, 10) dirección Norte
+== Fin de ruta == 
+
