@@ -1,5 +1,7 @@
 package co.com.s4n.semillero.ejercicio.dominio.servicios;
 
+import co.com.s4n.semillero.ejercicio.dominio.entidades.Dron;
+import io.vavr.collection.List;
 import io.vavr.control.Try;
 
 import java.io.BufferedWriter;
@@ -27,6 +29,19 @@ public class Servicios{
             pw.get().println(s);
             pw.get().close();
         }
+    }
+
+    public static String organizarEscrituraEnArchivo(List<List<Dron>> list){
+        String[] s= {"== Reporte de entregas == \n"};
+        list.forEach(x-> {
+            x.forEach(dron -> {
+                s[0] += "(" + dron.getX()+", "+ dron.getY() + ") dirección " + dron.getDir()+"\n";
+            });
+
+            s[0] += "== Fin de ruta == \n";
+        });
+
+        return s[0];
     }
 
 }

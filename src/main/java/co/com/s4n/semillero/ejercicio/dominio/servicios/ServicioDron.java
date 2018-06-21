@@ -16,14 +16,14 @@ import java.util.stream.Stream;
 public class ServicioDron {
 
     public static Dron moverAdelante(Dron a){
+        Dron res = a;
         switch (a.getDir()){
-            case Norte: return new Dron(a.getX(), a.getY()+1, a.getDir());
-            case Este: return new Dron(a.getX()+1, a.getY(), a.getDir());
-            case Oeste: return new Dron(a.getX()-1, a.getY(), a.getDir());
-            case Sur: return new Dron(a.getX(), a.getY()-1, a.getDir());
+            case Norte: res= new Dron(a.getX(), a.getY()+1, a.getDir()); break;
+            case Este: res= new Dron(a.getX()+1, a.getY(), a.getDir()); break;
+            case Oeste: res= new Dron(a.getX()-1, a.getY(), a.getDir()); break;
+            case Sur: res= new Dron(a.getX(), a.getY()-1, a.getDir()); break;
         }
-
-        return a;
+        return (res.getX()<11 && res.getY() < 11)? res: a;
     }
 
     public static Dron girarIzquierda(Dron a){
@@ -73,7 +73,8 @@ public class ServicioDron {
     }
 
     public static io.vavr.collection.List<Entrega> asignarEntregas(Ruta r){
-        return r.getRuta();
+        io.vavr.collection.List<Entrega> filtered = r.getRuta().filter(x -> !x.accions().isEmpty());
+        return filtered;
     }
 
     public static io.vavr.collection.List<Dron> entregarRuta(Tuple2<io.vavr.collection.List<Entrega>, Dron> t){

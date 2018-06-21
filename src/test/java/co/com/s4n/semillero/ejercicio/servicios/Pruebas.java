@@ -26,6 +26,7 @@ import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioRuta.part
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.escribirArchivo;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.leerArchivo;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioDron.*;
+import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.organizarEscrituraEnArchivo;
 import static io.vavr.control.Try.success;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -171,12 +172,11 @@ public class Pruebas {
 
         Dron d = new Dron();
 
-        List<List<Dron>> map = rutas.map(x -> asignarEntregas(x))
+        List<List<Dron>> resultados = rutas.map(x -> asignarEntregas(x))
                 .map(s ->
                         Tuple.of(s, new Dron())).map(z -> entregarRuta(z));
 
-        System.out.println("->"+map);
-
+        escribirArchivo(organizarEscrituraEnArchivo(resultados), "./src/main/resources/out.txt");
     }
 
 }
