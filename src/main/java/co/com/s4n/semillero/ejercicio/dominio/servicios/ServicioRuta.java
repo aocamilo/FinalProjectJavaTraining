@@ -1,15 +1,11 @@
 package co.com.s4n.semillero.ejercicio.dominio.servicios;
 
+import co.com.s4n.semillero.ejercicio.dominio.entidades.Dron;
 import co.com.s4n.semillero.ejercicio.dominio.entidades.Entrega;
 import co.com.s4n.semillero.ejercicio.dominio.entidades.Ruta;
-import io.vavr.Tuple;
-import io.vavr.Tuple3;
 import io.vavr.collection.List;
-import io.vavr.collection.Map;
-import io.vavr.control.Try;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.ArrayList;
 
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioEntrega.convertirLineaAEntrega;
 
@@ -28,27 +24,21 @@ public class ServicioRuta {
     }
 
 
-
-    public static List<String> partirRutas(List<String> a){
-        List<String> l2 = a.pop().append("0");
-        List<String> l3 = l2.pop().append("0");
-
-        Map<Integer, List<String>> tuple2s = a.groupBy(s -> 3   );
-
-        String[] s = new String[a.size()];
-
-        for (int i = 0 ; i < a.size(); i=i+3){
-            s[i]= a.get(i)+";"+l2.get(i)+";"+l3.get(i);
+    public static List<Ruta> partirRutas(List<Entrega> entregas){
+        Dron d = new Dron();
+        Entrega[] acc = new Entrega[d.getCapacidad()];
+        java.util.List<Ruta> res= new ArrayList<Ruta>();
+        for (int i = 0; i< entregas.size(); i=i+3){
+            for (int j=0; j < d.getCapacidad(); j++){
+                if (i+j <entregas.size()){
+                    acc[j] = entregas.get(j+i);
+                }else{
+                    acc[j] = new Entrega(List.of());
+                }
+            }
+            res.add((new Ruta(List.of(acc))));
         }
-
-        List<String> res = Stream.of(s).filter(x -> x != null).collect(List.collector());
-
-        System.out.println(tuple2s);
-
-        return res;
-
+        return res.stream().collect(List.collector());
     }
-
-    public static void asignarRutas(){}
 
 }

@@ -4,9 +4,11 @@ import co.com.s4n.semillero.ejercicio.dominio.vo.Posicion;
 
 public class Dron {
 
+    private String id= "";
     private int x;
     private int y;
     private Posicion dir;
+    private int capacidad = 3;
 
     public Dron(){
         x= 0;
@@ -31,6 +33,10 @@ public class Dron {
     public Posicion getDir(){
         return dir;
     }
+
+    public int getCapacidad(){ return capacidad; }
+
+    public String getId(){ return id; }
 
     public String toString(){
         return (x+"/"+y+"/"+ dir);
