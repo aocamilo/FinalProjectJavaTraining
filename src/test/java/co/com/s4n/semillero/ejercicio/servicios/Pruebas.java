@@ -87,21 +87,10 @@ public class Pruebas {
 
     @Test
     public void pruebaEscribirArchivo() throws IOException {
-        escribirArchivo("== Reporte de entregas ==", "./src/main/resources/out.txt");
+        escribirArchivo("== Reporte de entregas ==", "./src/main/resources/outPrueba.txt");
     }
 
-    /*
-    @Test
-    public void pruebaDeterminarAcciones(){
-        Dron d = new Dron();
-        Dron dronR = determinarAcciones("AAAAIAAD", d);
-        Dron dronR2 = determinarAcciones("DDAIAD", dronR);
-        Dron dronR3 = determinarAcciones("AAIADAD", dronR2);
-        assertTrue(dronR.toString().equals("-2/4/Norte"));
-        assertTrue(dronR2.toString().equals("-1/3/Sur"));
-        assertTrue(dronR3.toString().equals("0/0/Oeste"));
-    }
-    */
+
 
     @Test
     public void pruebaAFold(){
@@ -140,13 +129,13 @@ public class Pruebas {
 
     @Test
     public void convertirEntregas(){
-        Try<Stream<String>> streams = leerArchivo("./src/main/resources/in.txt");
+        Try<Stream<String>> streams = leerArchivo("./src/main/resources/in1.txt");
         io.vavr.collection.List<String> leido = streams.get().collect(io.vavr.collection.List.collector());
         List<List<String>> expected = List.of(List.of("A","A","A","A","I","A","A","D"),List.of("D","D","A","I","A","D"),
                 List.of("A","A","I","A","D","A","D")) ;
         List<Entrega> entregas = linea2Entrega(leido);
         List<Ruta> rutas = partirRutas(entregas);
-        //assertEquals(entregas.toString(), expected.toString());
+        assertEquals(entregas.toString(), expected.toString());
     }
 
     @Test
@@ -177,6 +166,46 @@ public class Pruebas {
                         Tuple.of(s, new Dron())).map(z -> entregarRuta(z));
 
         escribirArchivo(organizarEscrituraEnArchivo(resultados), "./src/main/resources/out.txt");
+    }
+
+    @Test
+    public void pruebaConArchivoVacio(){
+        Try<Stream<String>> streams = leerArchivo("./src/main/resources/x.txt");
+        assertTrue(streams.isFailure());
+    }
+
+    @Test
+    public void pruebaCaracteres(){
+        List<Ruta> rutas = leerArchivo("./src/main/resources/inC.txt")
+                .recover(Exception.class, Stream.of("0")).get()
+                .collect(List.collector())
+                .transform(x -> linea2Entrega(x))
+                .transform(x -> partirRutas(x));
+        assertEquals(rutas.head().getRuta().head().toString(), List.of(Accion.A, Accion.A,Accion.A,Accion.A).toString());
+    }
+
+    @Test
+    public void pruebaFueraDelBarrio(){
+
+        Future<Dron> dron = Future.of(()-> new Dron());
+
+        Future<Dron> dronR = dron
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x))
+                .map(x -> moverAdelante(x));
+
+        Dron d = dronR.getOrElse(new Dron());
+        assertEquals(d.getY(), 10);
     }
 
 }
