@@ -3,8 +3,11 @@ package co.com.s4n.semillero.ejercicio.servicios;
 
 import co.com.s4n.semillero.ejercicio.dominio.entidades.Dron;
 import co.com.s4n.semillero.ejercicio.dominio.entidades.Entrega;
+import co.com.s4n.semillero.ejercicio.dominio.entidades.Ruta;
 import co.com.s4n.semillero.ejercicio.dominio.vo.Accion;
 import co.com.s4n.semillero.ejercicio.dominio.vo.Posicion;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import io.vavr.concurrent.Future;
 import io.vavr.control.Try;
@@ -19,9 +22,11 @@ import java.util.stream.Stream;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioEntrega.convertirLineaAEntrega;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioEntrega.string2Accion;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioRuta.linea2Entrega;
+import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioRuta.partirRutas;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.escribirArchivo;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.leerArchivo;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioDron.*;
+import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.organizarEscrituraEnArchivo;
 import static io.vavr.control.Try.success;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -82,10 +87,10 @@ public class Pruebas {
 
     @Test
     public void pruebaEscribirArchivo() throws IOException {
-        Try<String> res = escribirArchivo("== Reporte de entregas ==", "./src/main/resources/out.txt");
-        System.out.println(res.get());
+        escribirArchivo("== Reporte de entregas ==", "./src/main/resources/out.txt");
     }
 
+    /*
     @Test
     public void pruebaDeterminarAcciones(){
         Dron d = new Dron();
@@ -96,13 +101,14 @@ public class Pruebas {
         assertTrue(dronR2.toString().equals("-1/3/Sur"));
         assertTrue(dronR3.toString().equals("0/0/Oeste"));
     }
+    */
 
     @Test
     public void pruebaAFold(){
         io.vavr.collection.List<String> rutas = io.vavr.collection.List.of("A", "A", "A", "A", "I", "A", "A", "D");
         Dron d = new Dron();
 
-        Dron ensayo = ensayo(rutas, d);
+        Dron ensayo = foldAcciones(rutas, d);
 
         System.out.println("("+ ensayo.getX()+", "+ ensayo.getY()+") posición "+ensayo.getDir());
 
@@ -136,10 +142,41 @@ public class Pruebas {
     public void convertirEntregas(){
         Try<Stream<String>> streams = leerArchivo("./src/main/resources/in.txt");
         io.vavr.collection.List<String> leido = streams.get().collect(io.vavr.collection.List.collector());
-
+        List<List<String>> expected = List.of(List.of("A","A","A","A","I","A","A","D"),List.of("D","D","A","I","A","D"),
+                List.of("A","A","I","A","D","A","D")) ;
         List<Entrega> entregas = linea2Entrega(leido);
+        List<Ruta> rutas = partirRutas(entregas);
+        //assertEquals(entregas.toString(), expected.toString());
+    }
 
-        System.out.println(entregas);
+    @Test
+    public void pruebaADeterminarAcciones(){
+        Entrega e = new Entrega(List.of(Accion.A, Accion.A, Accion.A, Accion.A, Accion.I));
+        Dron d = new Dron();
+
+        Dron dron = determinarAcciones(e, d);
+
+        assertEquals(dron.getX(), 0);
+        assertEquals(dron.getY(), 4);
+        assertEquals(dron.getDir(), Posicion.Oeste);
+    }
+
+    @Test
+    public void e2eTest(){
+
+        List<Ruta> rutas = leerArchivo("./src/main/resources/in.txt")
+                .recover(Exception.class, Stream.of("0")).get()
+                .collect(List.collector())
+                .transform(x -> linea2Entrega(x))
+                .transform(x -> partirRutas(x));
+
+        Dron d = new Dron();
+
+        List<List<Dron>> resultados = rutas.map(x -> asignarEntregas(x))
+                .map(s ->
+                        Tuple.of(s, new Dron())).map(z -> entregarRuta(z));
+
+        escribirArchivo(organizarEscrituraEnArchivo(resultados), "./src/main/resources/out.txt");
     }
 
 }

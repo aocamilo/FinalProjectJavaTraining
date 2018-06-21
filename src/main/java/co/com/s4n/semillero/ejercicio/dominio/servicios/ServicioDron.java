@@ -1,7 +1,12 @@
 package co.com.s4n.semillero.ejercicio.dominio.servicios;
 
 import co.com.s4n.semillero.ejercicio.dominio.entidades.Dron;
+import co.com.s4n.semillero.ejercicio.dominio.entidades.Entrega;
+import co.com.s4n.semillero.ejercicio.dominio.entidades.Ruta;
+import co.com.s4n.semillero.ejercicio.dominio.vo.Accion;
 import co.com.s4n.semillero.ejercicio.dominio.vo.Posicion;
+import io.vavr.Tuple2;
+import io.vavr.control.Try;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,14 +16,14 @@ import java.util.stream.Stream;
 public class ServicioDron {
 
     public static Dron moverAdelante(Dron a){
+        Dron res = a;
         switch (a.getDir()){
-            case Norte: return new Dron(a.getX(), a.getY()+1, a.getDir());
-            case Este: return new Dron(a.getX()+1, a.getY(), a.getDir());
-            case Oeste: return new Dron(a.getX()-1, a.getY(), a.getDir());
-            case Sur: return new Dron(a.getX(), a.getY()-1, a.getDir());
+            case Norte: res= new Dron(a.getX(), a.getY()+1, a.getDir()); break;
+            case Este: res= new Dron(a.getX()+1, a.getY(), a.getDir()); break;
+            case Oeste: res= new Dron(a.getX()-1, a.getY(), a.getDir()); break;
+            case Sur: res= new Dron(a.getX(), a.getY()-1, a.getDir()); break;
         }
-
-        return a;
+        return (res.getX()<11 && res.getY() < 11)? res: a;
     }
 
     public static Dron girarIzquierda(Dron a){
@@ -43,7 +48,7 @@ public class ServicioDron {
         return a;
     }
 
-    public static Dron determinarAcciones(String s, Dron a){
+    /*public static Dron determinarAcciones(String s, Dron a){
         Stream<String> aOperar = Stream.of(s.split(""));
         List<Dron> res= new ArrayList<Dron>();
         res.add(a);
@@ -55,7 +60,7 @@ public class ServicioDron {
         });
 
         return res.get(res.size()-1);
-    }
+    }*/
 
     public static Dron ejecutarAcciones(String s, Dron d){
         switch (s){
@@ -67,35 +72,63 @@ public class ServicioDron {
         return d;
     }
 
-    public static void repartirEntregas(List<String> entregas){
+    public static io.vavr.collection.List<Entrega> asignarEntregas(Ruta r){
+        io.vavr.collection.List<Entrega> filtered = r.getRuta().filter(x -> !x.accions().isEmpty());
+        return filtered;
+    }
+
+    public static io.vavr.collection.List<Dron> entregarRuta(Tuple2<io.vavr.collection.List<Entrega>, Dron> t){
+        io.vavr.collection.List<Entrega> entregas= t._1;
+        List<Dron> res= new ArrayList<Dron>();
+        res.add(t._2);
+        final int [] indice = {0};
+        entregas.forEach(x-> {
+            res.add(determinarAcciones(x, res.get(indice[0])));
+            indice[0]++;
+        });
+        return res.stream().collect(io.vavr.collection.List.collector()).tail();
 
     }
 
-    public static Dron ensayo(io.vavr.collection.List<String>s, Dron a){
+    public static Dron determinarAcciones(Entrega e, Dron d){
+        io.vavr.collection.List<String> listaString = e.accions()
+                .map(a -> String.valueOf(a));
+        Dron dron = foldAcciones(listaString, d);
+        return dron;
+
+    }
+    
+    public static Dron foldAcciones(io.vavr.collection.List<String>s, Dron a){
         String s1 = a.toString();
-        String folded = s.fold(s1, (x, y) -> ensayo2(x, y));
+        String folded = s.fold(s1, (x, y) -> operarDron(x, y));
         String[] split = folded.split("/");
         Posicion pos = null;
-        switch (split[2]){
-            case "Norte": pos = Posicion.Norte; break;
-            case "Sur": pos = Posicion.Sur; break;
-            case "Este": pos = Posicion.Este; break;
-            case "Oeste": pos = Posicion.Oeste; break;
+        Try<Posicion> posicion = determinarPosicion(split[2]);
+        if (posicion.isSuccess()){
+            pos = posicion.get();
         }
         Dron d = new Dron(Integer.parseInt(split[0]), Integer.parseInt(split[1]), pos);
         return d;
     }
 
-    public static String ensayo2 (String s, String s2){
+    public static String operarDron (String s, String s2){
         String[] split = s.split("/");
         Posicion pos = null;
-        switch (split[2]){
-            case "Norte": pos = Posicion.Norte; break;
-            case "Sur": pos = Posicion.Sur; break;
-            case "Este": pos = Posicion.Este; break;
-            case "Oeste": pos = Posicion.Oeste; break;
+        Try<Posicion> posicion = determinarPosicion(split[2]);
+        if (posicion.isSuccess()){
+            pos = posicion.get();
         }
         Dron d = new Dron(Integer.parseInt(split[0]), Integer.parseInt(split[1]), pos);
         return ejecutarAcciones(s2, d).toString();
+    }
+
+    public static Try<Posicion> determinarPosicion(String a){
+        switch (a){
+            case "Norte": return Try.of(()-> Posicion.Norte);
+            case "Sur": return Try.of(()-> Posicion.Sur);
+            case "Este": return Try.of(()-> Posicion.Este);
+            case "Oeste": return Try.of(()-> Posicion.Oeste);
+            default: return Try.failure(new Exception("Posicion Incorrecta"));
+        }
     }
 }
