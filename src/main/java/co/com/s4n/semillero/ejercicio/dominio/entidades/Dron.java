@@ -8,7 +8,7 @@ public class Dron {
     private int x;
     private int y;
     private Posicion dir;
-    private int capacidad = 10;
+    private int capacidad = 3;
 
     public Dron(){
         x= 0;
