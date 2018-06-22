@@ -17,6 +17,8 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioEntrega.convertirLineaAEntrega;
@@ -208,12 +210,11 @@ public class Pruebas {
 
     @Test
     public void operarVeinteDrones(){
+        ExecutorService pool = Executors.newFixedThreadPool(20);
         for(int i= 0; i<20; i++){
             final int j = i;
-            Future.of(()-> ejecutarDron("./src/main/resources/in"+(j+1)+".txt", "./src/main/resources/out"+(j+1)+".txt"));
+            Future.of(pool, ()-> ejecutarDron("./src/main/resources/in"+(j+1)+".txt", "./src/main/resources/out"+(j+1)+".txt"));
         }
     }
-
-
 
 }
