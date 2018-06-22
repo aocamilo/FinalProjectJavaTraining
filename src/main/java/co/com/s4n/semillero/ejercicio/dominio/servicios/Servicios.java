@@ -1,6 +1,8 @@
 package co.com.s4n.semillero.ejercicio.dominio.servicios;
 
 import co.com.s4n.semillero.ejercicio.dominio.entidades.Dron;
+import co.com.s4n.semillero.ejercicio.dominio.entidades.Ruta;
+import io.vavr.Tuple;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 
@@ -13,6 +15,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.stream.Stream;
+import io.vavr.concurrent.Future;
+
+import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioDron.asignarEntregas;
+import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioDron.entregarRuta;
+import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioRuta.linea2Entrega;
+import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioRuta.partirRutas;
 
 public class Servicios{
 
@@ -42,6 +50,24 @@ public class Servicios{
         });
 
         return s[0];
+    }
+
+    public static Future<String> ejecutarDron(String archivoEntrada, String archivoSalida){
+        List<Ruta> rutas = leerArchivo(archivoEntrada)
+                .recover(Exception.class, Stream.of("0")).get()
+                .collect(List.collector())
+                .transform(x -> linea2Entrega(x))
+                .transform(x -> partirRutas(x));
+
+        Dron d = new Dron();
+
+        List<List<Dron>> resultados = rutas.map(x -> asignarEntregas(x))
+                .map(s ->
+                        Tuple.of(s, new Dron())).map(z -> entregarRuta(z));
+
+        escribirArchivo(organizarEscrituraEnArchivo(resultados), archivoSalida);
+
+        return Future.of(()->"success");
     }
 
 }

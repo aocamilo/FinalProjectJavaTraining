@@ -23,10 +23,8 @@ import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioEntrega.c
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioEntrega.string2Accion;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioRuta.linea2Entrega;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioRuta.partirRutas;
-import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.escribirArchivo;
-import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.leerArchivo;
 import static co.com.s4n.semillero.ejercicio.dominio.servicios.ServicioDron.*;
-import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.organizarEscrituraEnArchivo;
+import static co.com.s4n.semillero.ejercicio.dominio.servicios.Servicios.*;
 import static io.vavr.control.Try.success;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -129,7 +127,7 @@ public class Pruebas {
 
     @Test
     public void convertirEntregas(){
-        Try<Stream<String>> streams = leerArchivo("./src/main/resources/in1.txt");
+        Try<Stream<String>> streams = leerArchivo("./src/main/resources/inE.txt");
         io.vavr.collection.List<String> leido = streams.get().collect(io.vavr.collection.List.collector());
         List<List<String>> expected = List.of(List.of("A","A","A","A","I","A","A","D"),List.of("D","D","A","I","A","D"),
                 List.of("A","A","I","A","D","A","D")) ;
@@ -207,5 +205,15 @@ public class Pruebas {
         Dron d = dronR.getOrElse(new Dron());
         assertEquals(d.getY(), 10);
     }
+
+    @Test
+    public void operarVeinteDrones(){
+        for(int i= 0; i<20; i++){
+            final int j = i;
+            Future.of(()-> ejecutarDron("./src/main/resources/in"+(j+1)+".txt", "./src/main/resources/out"+(j+1)+".txt"));
+        }
+    }
+
+
 
 }

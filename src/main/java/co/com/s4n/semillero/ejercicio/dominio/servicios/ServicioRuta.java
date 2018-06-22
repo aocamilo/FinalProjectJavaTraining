@@ -28,7 +28,7 @@ public class ServicioRuta {
         Dron d = new Dron();
         Entrega[] acc = new Entrega[d.getCapacidad()];
         java.util.List<Ruta> res= new ArrayList<Ruta>();
-        for (int i = 0; i< entregas.size(); i=i+3){
+        for (int i = 0; i< entregas.size(); i=i+d.getCapacidad()){
             for (int j=0; j < d.getCapacidad(); j++){
                 if (i+j <entregas.size()){
                     acc[j] = entregas.get(j+i);
